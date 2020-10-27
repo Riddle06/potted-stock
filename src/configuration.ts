@@ -6,6 +6,19 @@ export interface Configuration {
 }
 
 export const config: Configuration = {
-    appPort: +process.env.APP_PORT || 8080
+    appPort: getPort()
 }
 
+
+function getPort(): number {
+
+    if (process.env.PORT) {
+        return +process.env.PORT
+    }
+
+    if (process.env.APP_PORT) {
+        return +process.env.APP_PORT
+    }
+
+    return 8080;
+}
