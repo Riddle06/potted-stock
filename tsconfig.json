@@ -7,11 +7,7 @@
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "sourceMap": true,
-        "outDir": "./dist",
-        "baseUrl": "src",
-        "paths": {
-            
-        }
+        "outDir": "./dist"
     },
     "include": [
         "./src/**/*"

@@ -1,4 +1,4 @@
-import { RankStockItem } from "stock-fetcher";
+import { RankStockItem } from "../services/stock-fetcher";
 import * as luxon from "luxon";
 
 export enum RankType {

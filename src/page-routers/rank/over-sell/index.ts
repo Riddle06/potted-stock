@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getBig5Content, parseRankStockHtml, sourceUrls } from '../../../stock-fetcher';
+import { getBig5Content, parseRankStockHtml, sourceUrls } from '../../../services/stock-fetcher';
 import { RankPageViewModel, RankType } from '../../../view-models/rank.vm';
 const router = Router();
 const isOverBuy = false;

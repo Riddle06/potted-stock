@@ -20,6 +20,7 @@ generate-ts-db-models/
 # Keys
 keys/*.json
 google-cloud-storage.json
+firebase-key.json
 
 # Mocha
 mochawesome-reports/
@@ -28,6 +29,7 @@ mochawesome-report/
 # run time folders
 archive-files/
 generate-files/
+
 
 # config
 # env

@@ -1,4 +1,4 @@
-import { config } from './configuration';
+import { config } from '../configuration';
 import nodeHtmlToImage from "node-html-to-image";
 import * as request from "request";
 import * as path from "path";
