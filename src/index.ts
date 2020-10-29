@@ -12,5 +12,10 @@ app.use('/', PageRouter);
 setTasks();
 app.listen(config.appPort, () => {
     console.log(`server listen on ${config.appPort}`)
+
+    console.log(`====== serverInfo`, {
+        currentDate: new Date(),
+        envConfig: process.env
+    })
 })
 

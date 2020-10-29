@@ -14,9 +14,6 @@ export async function setTasks(): Promise<void> {
 
 async function pushToLineChatbotTask() {
     console.log(`pushToLineChatbotTask start`)
-    console.log({
-        current: new Date()
-    })
     // 現在時間是否要 run service
 
     // 產圖片：買賣超 外資 , 投信, 主力, 自營商
@@ -28,8 +25,4 @@ async function pushToLineChatbotTask() {
 
 async function clearFolderFiles() {
     console.log(`clear folder file`);
-
-    console.log({
-        env: process.env
-    })
 }
