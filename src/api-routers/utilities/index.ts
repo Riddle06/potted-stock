@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as luxon from "luxon";
-import { generateImages } from '../../services/task.svc';
+import { clearFolderFiles, generateImages } from '../../services/task.svc';
 const router = Router();
 
 router.get('/current-time', async (req, res, next) => {
@@ -18,6 +18,13 @@ router.post('/stock-images', async (req, res, next) => {
         res.json(error)
     }
 
+})
+
+router.delete('/stock-images', async (req, res, next) => {
+    await clearFolderFiles()
+    res.json({
+        success: true
+    })
 })
 
 export default router;

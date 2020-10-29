@@ -33,7 +33,7 @@ async function pushToLineChatbotTask() {
     // push images to line chatbot
 }
 
-async function clearFolderFiles(): Promise<boolean> {
+export async function clearFolderFiles(): Promise<boolean> {
     const rm = util.promisify(fs.rm)
     const clearPath = path.resolve(__dirname, `../../generate-files`);
     const removeResult = await rm(clearPath, { recursive: true, force: true });
