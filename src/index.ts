@@ -3,7 +3,7 @@ import express from "express";
 import expressHandlebars from "express-handlebars"
 import PageRouter from './page-routers';
 import ApiRouter from "./api-routers";
-import { setTasks } from './services/task.svc';
+import { generateImages, setTasks } from './services/task.svc';
 import * as path from "path";
 
 const app = express();
@@ -32,3 +32,5 @@ app.listen(config.appPort, () => {
     })
 })
 
+
+generateImages()

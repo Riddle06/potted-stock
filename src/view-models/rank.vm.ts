@@ -16,6 +16,9 @@ export class RankPageViewModel {
     public headerText: string
     public rankItems: RankItemViewModel[]
     public headerTextStyle: string
+    public rankType: RankType;
+    public dateQuery: Date
+    public isOverBuy: boolean
     constructor(param: RankPageViewModelInitParameter) {
         this.rankItems = param.rankStockItems.slice(0, 10).map(item => {
 
@@ -32,11 +35,14 @@ export class RankPageViewModel {
 
             return result
         })
+        this.rankType = param.rankType;
         this.headerText = this.getHeaderText(param.isOverBuy, param.dateQuery, param.rankType);
+        this.dateQuery = param.dateQuery;
+        this.isOverBuy = param.isOverBuy
 
         if (param.isOverBuy) {
             this.headerTextStyle = "text-danger";
-        } else { 
+        } else {
             this.headerTextStyle = "text-success";
         }
     }
