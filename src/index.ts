@@ -32,5 +32,7 @@ app.listen(config.appPort, () => {
     })
 })
 
+process.on('unhandledRejection', console.dir);
+
 
 generateImages()
