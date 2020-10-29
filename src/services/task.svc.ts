@@ -7,6 +7,8 @@ import * as path from "path";
 import { RankPageViewModel, RankType } from '../view-models/rank.vm';
 import { getBig5Content, parseRankStockHtml, sourceUrls } from './stock-fetcher';
 import nodeHtmlToImage from "node-html-to-image";
+import { Client } from '@line/bot-sdk';
+import { messaging } from 'firebase-admin';
 
 export async function setTasks(): Promise<void> {
     nodeSchedule.scheduleJob(config.schedulePushToLineChatbot, () => {
@@ -31,6 +33,14 @@ async function pushToLineChatbotTask() {
     const ret = await generateImages()
 
     // push images to line chatbot
+
+    const client = new Client({
+        channelAccessToken: config.lineChannelAccessToken,
+        channelSecret: config.lineChannelSecret
+    })
+
+    // client.broadcast()
+    
 }
 
 export async function clearFolderFiles(): Promise<boolean> {
