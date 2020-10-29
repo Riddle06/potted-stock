@@ -7,7 +7,7 @@ import * as path from "path";
 import { RankPageViewModel, RankType } from '../view-models/rank.vm';
 import { getBig5Content, parseRankStockHtml, sourceUrls } from './stock-fetcher';
 import nodeHtmlToImage from "node-html-to-image";
-import { Client } from '@line/bot-sdk';
+import { Client, FlexMessage } from '@line/bot-sdk';
 import { messaging } from 'firebase-admin';
 
 export async function setTasks(): Promise<void> {
@@ -39,8 +39,43 @@ async function pushToLineChatbotTask() {
         channelSecret: config.lineChannelSecret
     })
 
-    // client.broadcast()
-    
+    const flex: FlexMessage = {
+        type: "flex",
+        contents: {
+            "type": "carousel",
+            "contents": [
+                {
+                    "type": "bubble",
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "contents": [
+                            {
+                                "type": "image",
+                                "url": "https://potted-stock.herokuapp.com/static/2020-10-29/selfEmployed-over-sell-1603988079.118.png",
+                                "size": "full",
+                                "gravity": "top",
+                                "aspectMode": "fit",
+                                "aspectRatio": "1:1"
+                            }
+                        ],
+                        "paddingAll": "0px"
+                    }
+                },
+                {
+                    "type": "bubble",
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "contents": []
+                    }
+                }
+            ]
+        },
+        altText: ""
+    }
+    client.broadcast(flex)
+
 }
 
 export async function clearFolderFiles(): Promise<boolean> {
