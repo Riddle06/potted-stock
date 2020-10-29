@@ -7,12 +7,16 @@ export interface Configuration {
     appPort: number
     firebaseKey: unknown,
     firebaseBucketName: string
+    schedulePushToLineChatbot: string
+    scheduleClearFolder: string
 }
 
 export const config: Configuration = {
     appPort: getPort(),
     firebaseKey: getFirebaseKey(),
-    firebaseBucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME
+    firebaseBucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
+    schedulePushToLineChatbot: process.env.SCHEDULE_PUSH_TO_LINE_CHATBOT,
+    scheduleClearFolder: process.env.SCHEDULE_CLEAR_FOLDER
 }
 
 
