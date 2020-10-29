@@ -28,4 +28,8 @@ async function pushToLineChatbotTask() {
 
 async function clearFolderFiles() {
     console.log(`clear folder file`);
+
+    console.log({
+        env: process.env
+    })
 }
