@@ -83,6 +83,7 @@ export async function generateImages(): Promise<string[]> {
 
     await nodeHtmlToImage({
         html: htmlTemplate,
+        puppeteerArgs: { args: ['--no-sandbox'] },
         content: pageModels.map(model => {
             const fileName = `${model.rankType}-${model.isOverBuy ? "over-buy" : "over-sell"}-${luxon.DateTime.local().toSeconds()}.png`;
             const output = path.resolve(__dirname, `../../generate-files/${luxon.DateTime.fromJSDate(model.dateQuery).toFormat("yyyy-MM-dd")}/${fileName}`);
