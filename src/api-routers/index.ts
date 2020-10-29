@@ -4,7 +4,15 @@ import WebhooksRouter from "./webhooks";
 import * as bodyParser from "body-parser";
 const router = Router();
 
-router.use(bodyParser.json())
+router.use((req, res, next) => {
+
+    if (req.path.indexOf('/webhooks') === -1) {
+        return bodyParser.json()(req, res, next);
+    }
+
+    // skip body parser 
+    next();
+})
 router.use('/utilities', UtilitiesRouter);
 router.use('/webhooks', WebhooksRouter);
 export default router;
