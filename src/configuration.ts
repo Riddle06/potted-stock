@@ -5,6 +5,7 @@ dotenv.config();
 
 export interface Configuration {
     appPort: number
+    appBaseUrl: string
     firebaseKey: unknown,
     firebaseBucketName: string
     schedulePushToLineChatbot: string
@@ -13,6 +14,7 @@ export interface Configuration {
 
 export const config: Configuration = {
     appPort: getPort(),
+    appBaseUrl: process.env.APP_BASE_URL,
     firebaseKey: getFirebaseKey(),
     firebaseBucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
     schedulePushToLineChatbot: process.env.SCHEDULE_PUSH_TO_LINE_CHATBOT,
