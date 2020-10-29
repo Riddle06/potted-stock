@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf dist",
-    "init": "mkdir dist && mkdir -p logs",
+    "init": "mkdir dist && mkdir -p logs && mkdir generate-files -p",
     "prebuild": "npm run clean && npm run init",
     "build": "node_modules/typescript/bin/tsc",
     "start": "node ./dist",
