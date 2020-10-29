@@ -10,6 +10,8 @@ export interface Configuration {
     firebaseBucketName: string
     schedulePushToLineChatbot: string
     scheduleClearFolder: string
+    lineChannelSecret: string
+    lineChannelAccessToken: string
 }
 
 export const config: Configuration = {
@@ -18,7 +20,9 @@ export const config: Configuration = {
     firebaseKey: getFirebaseKey(),
     firebaseBucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
     schedulePushToLineChatbot: process.env.SCHEDULE_PUSH_TO_LINE_CHATBOT,
-    scheduleClearFolder: process.env.SCHEDULE_CLEAR_FOLDER
+    scheduleClearFolder: process.env.SCHEDULE_CLEAR_FOLDER,
+    lineChannelSecret: process.env.LINE_CHANNEL_SECRET,
+    lineChannelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN
 }
 
 

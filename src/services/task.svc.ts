@@ -95,6 +95,8 @@ export async function generateImages(): Promise<string[]> {
         })
     })
 
+    console.log({ ret })
+
     return ret;
 }
 
