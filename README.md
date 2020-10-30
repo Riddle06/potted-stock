@@ -20,7 +20,7 @@
 
 - 種花裁金 QR Code
 
-![](https://imgur.com/s02uap2)
+![](https://imgur.com/dHyrjED.png)
 
 <a href="https://lin.ee/iH0OfcO"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/zh-Hant.png" alt="加入好友" height="36" border="0"></a>
 
