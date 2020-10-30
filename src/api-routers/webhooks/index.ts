@@ -15,7 +15,7 @@ router.use('/line-chatbot', middleware(lineChatbotConfig), async (req, res, next
     for (const event of body.events) {
         if (event.type === "message" && event?.message.type === "text") {
             const replyToken = event.replyToken
-            if (event.message.text.indexOf("買超")) {
+            if (event.message.text.includes("買超")) {
                 await replyOverBuyFlexMessage(replyToken, true)
             } else if (event.message.text.indexOf("賣超")) {
                 await replyOverBuyFlexMessage(replyToken, false)
