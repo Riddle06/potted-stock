@@ -62,11 +62,11 @@ export async function parseRankStockHtml({ html }: { html: string }): Promise<Bu
         if (!isStockItem(tdElements)) {
             return true;
         }
-        if (typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[1]).text())) { 
+        if (typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[1]).text())) {
             return true;
         }
 
-        
+
         riseItems.push({
             rank: +$(tdElements[0]).text(),
             name: $(tdElements[1]).text(),
@@ -109,12 +109,13 @@ function isStockItem(tdElements: cheerio.Cheerio): boolean {
 }
 
 export async function getAllRankPageViewModels(size?: number): Promise<RankPageViewModel[]> {
-    const ret: string[] = [];
-
-    const foreignHtml = await getBig5Content({ url: sourceUrls.foreign });
-    const creditHtml = await getBig5Content({ url: sourceUrls.credit });
-    const hotHtml = await getBig5Content({ url: sourceUrls.hot });
-    const selfEmployedHtml = await getBig5Content({ url: sourceUrls.selfEmployed });
+    
+    const [foreignHtml, creditHtml, hotHtml, selfEmployedHtml] = await Promise.all([
+        getBig5Content({ url: sourceUrls.foreign }),
+        getBig5Content({ url: sourceUrls.credit }),
+        getBig5Content({ url: sourceUrls.hot }),
+        getBig5Content({ url: sourceUrls.selfEmployed })
+    ])
 
     const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseRankStockHtml({ html: foreignHtml });
     const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseRankStockHtml({ html: creditHtml });
