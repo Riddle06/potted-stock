@@ -35,6 +35,7 @@ router.post('/try-broadcast', async (req, res, next) => {
             urls
         })
     } catch (error) {
+        console.log(error)
         res.json(error)
     }
 

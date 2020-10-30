@@ -3,6 +3,7 @@ import * as iconvLite from "iconv-lite";
 import $ from "cheerio";
 import * as luxon from "luxon";
 import { RankPageViewModel, RankType } from "../view-models/rank.vm";
+import { typeChecker } from 'camel-toolbox';
 
 
 export const sourceUrls: Readonly<{
@@ -61,7 +62,11 @@ export async function parseRankStockHtml({ html }: { html: string }): Promise<Bu
         if (!isStockItem(tdElements)) {
             return true;
         }
+        if (typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[1]).text())) { 
+            return true;
+        }
 
+        
         riseItems.push({
             rank: +$(tdElements[0]).text(),
             name: $(tdElements[1]).text(),
@@ -70,6 +75,7 @@ export async function parseRankStockHtml({ html }: { html: string }): Promise<Bu
             rise: +($(tdElements[4]).text().replace(/,/g, '')),
             id: $(tdElements[1]).text().match(stockRegex)[0].toUpperCase()
         })
+
 
         fallItems.push({
             rank: +$(tdElements[5]).text(),
