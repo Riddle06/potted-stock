@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as luxon from "luxon";
-import { clearFolderFiles, generateImages } from '../../services/task.svc';
+import { clearFolderFiles, generateImages, pushToLineChatbotTask } from '../../services/task.svc';
 const router = Router();
 
 router.get('/current-time', async (req, res, next) => {
@@ -25,6 +25,19 @@ router.delete('/stock-images', async (req, res, next) => {
     res.json({
         success: true
     })
+})
+
+router.post('/try-broadcast', async (req, res, next) => {
+    try {
+        const urls = await pushToLineChatbotTask()
+        res.json({
+            success: true,
+            urls
+        })
+    } catch (error) {
+        res.json(error)
+    }
+
 })
 
 export default router;

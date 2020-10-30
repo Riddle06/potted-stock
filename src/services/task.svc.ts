@@ -7,8 +7,8 @@ import * as path from "path";
 import { RankPageViewModel, RankType } from '../view-models/rank.vm';
 import { getBig5Content, parseRankStockHtml, sourceUrls } from './stock-fetcher';
 import nodeHtmlToImage from "node-html-to-image";
-import { Client, FlexMessage } from '@line/bot-sdk';
-import { messaging } from 'firebase-admin';
+import { Client, FlexMessage, ImageMessage } from '@line/bot-sdk';
+import * as del from "del";
 
 export async function setTasks(): Promise<void> {
     nodeSchedule.scheduleJob(config.schedulePushToLineChatbot, () => {
@@ -21,12 +21,12 @@ export async function setTasks(): Promise<void> {
 }
 
 
-async function pushToLineChatbotTask() {
+export async function pushToLineChatbotTask(): Promise<string[]> {
     console.log(`pushToLineChatbotTask start`)
     // 現在時間是否要 run service
 
     if (!isNeedToPush()) {
-        return;
+        return [];
     }
 
     // 產圖片：買賣超 外資 , 投信, 主力, 自營商
@@ -39,49 +39,37 @@ async function pushToLineChatbotTask() {
         channelSecret: config.lineChannelSecret
     })
 
-    const flex: FlexMessage = {
-        type: "flex",
-        contents: {
-            "type": "carousel",
-            "contents": [
-                {
-                    "type": "bubble",
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            {
-                                "type": "image",
-                                "url": "https://potted-stock.herokuapp.com/static/2020-10-29/selfEmployed-over-sell-1603988079.118.png",
-                                "size": "full",
-                                "gravity": "top",
-                                "aspectMode": "fit",
-                                "aspectRatio": "1:1"
-                            }
-                        ],
-                        "paddingAll": "0px"
-                    }
-                },
-                {
-                    "type": "bubble",
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": []
-                    }
-                }
-            ]
-        },
-        altText: ""
-    }
-    client.broadcast(flex)
 
+
+    // 買超
+    const overBuyImagesUrl = ret.filter(url => url.includes('over-buy'));
+    const overSellImagesUrl = ret.filter(url => url.includes('over-sell'));
+
+    const overBuyMessages: ImageMessage[] = overBuyImagesUrl.map(url => {
+        return {
+            type: "image",
+            originalContentUrl: url,
+            previewImageUrl: url
+        }
+    })
+
+    const overSellMessages: ImageMessage[] = overSellImagesUrl.map(url => {
+        return {
+            type: "image",
+            originalContentUrl: url,
+            previewImageUrl: url
+        }
+    })
+
+    await client.broadcast(overBuyMessages);
+    await client.broadcast(overSellMessages);
+
+    return ret;
 }
 
 export async function clearFolderFiles(): Promise<boolean> {
-    const rm = util.promisify(fs.rm)
-    const clearPath = path.resolve(__dirname, `../../generate-files`);
-    const removeResult = await rm(clearPath, { recursive: true, force: true });
+    const clearPath = path.resolve(__dirname, `../../generate-files/*/`);
+    del.sync([clearPath]);
     return true
 }
 

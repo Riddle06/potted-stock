@@ -3,7 +3,7 @@ import express from "express";
 import expressHandlebars from "express-handlebars"
 import PageRouter from './page-routers';
 import ApiRouter from "./api-routers";
-import { generateImages, setTasks } from './services/task.svc';
+import { setTasks } from './services/task.svc';
 import * as path from "path";
 
 const app = express();
@@ -33,6 +33,3 @@ app.listen(config.appPort, () => {
 })
 
 process.on('unhandledRejection', console.dir);
-
-
-generateImages()
