@@ -1,13 +1,9 @@
 import { config } from './../configuration';
 import * as nodeSchedule from "node-schedule";
 import * as luxon from "luxon";
-import * as fs from "fs";
-import * as util from "util";
 import * as path from "path";
-import { RankPageViewModel, RankType } from '../view-models/rank.vm';
-import { getAllRankPageViewModels, getBig5Content, parseRankStockHtml, sourceUrls } from './stock-fetcher';
-import nodeHtmlToImage from "node-html-to-image";
-import { Client, FlexMessage, ImageMessage } from '@line/bot-sdk';
+import { getAllRankPageViewModels } from './stock-fetcher';
+import { Client } from '@line/bot-sdk';
 import * as del from "del";
 import { generateRankStockFlexMessages } from './line-chatbot.svc';
 
@@ -32,7 +28,7 @@ export async function pushToLineChatbotTask(): Promise<void> {
     }
 
     const pageModels = await getAllRankPageViewModels(10)
-    
+
     const client = new Client({
         channelAccessToken: config.lineChannelAccessToken,
         channelSecret: config.lineChannelSecret
@@ -63,36 +59,3 @@ function isNeedToPush(): boolean {
 
     return allowPushWeekDay.some(weekday => weekday === currentWeekDay)
 }
-
-
-
-export async function generateImages(): Promise<string[]> {
-    const ret: string[] = [];
-    const readFile = util.promisify(fs.readFile)
-    const htmlTemplate = await readFile(path.resolve(__dirname, '../../views/rank.handlebars'), { encoding: 'utf-8' });
-    const pageModels = await getAllRankPageViewModels();
-    const dateQuery = pageModels[0]?.dateQuery ?? new Date();
-    const dirPath = path.resolve(__dirname, `../../generate-files/${luxon.DateTime.fromJSDate(dateQuery).toFormat("yyyy-MM-dd")}`);
-
-    if (!fs.existsSync(dirPath)) {
-        console.log(`create dir ${dirPath}`)
-        fs.mkdirSync(dirPath);
-    }
-
-    await nodeHtmlToImage({
-        html: htmlTemplate,
-        puppeteerArgs: { args: ['--no-sandbox'] },
-        content: pageModels.map(model => {
-            const fileName = `${model.rankType}-${model.isOverBuy ? "over-buy" : "over-sell"}-${luxon.DateTime.local().toSeconds()}.png`;
-            const output = path.resolve(__dirname, `../../generate-files/${luxon.DateTime.fromJSDate(model.dateQuery).toFormat("yyyy-MM-dd")}/${fileName}`);
-            ret.push(`${config.appBaseUrl}/static/${luxon.DateTime.fromJSDate(model.dateQuery).toFormat("yyyy-MM-dd")}/${fileName}`)
-            return {
-                ...model,
-                output
-            }
-        })
-    })
-
-    return ret;
-}
-
