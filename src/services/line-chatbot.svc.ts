@@ -1,9 +1,32 @@
-import { FlexBubble, FlexComponent, FlexMessage } from '@line/bot-sdk';
+import { Client, FlexBubble, FlexComponent, FlexMessage } from '@line/bot-sdk';
 import { RankPageViewModel, RankType } from '../view-models/rank.vm';
-import { RankStockItem } from './stock-fetcher';
+import { getAllRankPageViewModels, RankStockItem } from './stock-fetcher';
 import commaNumber from "comma-number";
 import { config } from '../configuration';
 
+
+const client = new Client({
+    channelAccessToken: config.lineChannelAccessToken,
+    channelSecret: config.lineChannelSecret
+})
+
+
+export async function replyOverBuyFlexMessage(replyToken: string, isOverBuy: boolean): Promise<void> {
+    const top: number = 10;
+    const models = await getAllRankPageViewModels(top)
+    let filterModels: RankPageViewModel[];
+    let altText: string;
+    if (isOverBuy) {
+        filterModels = models.filter(model => model.isOverBuy)
+        altText = `法人買超排行前 ${top} 名`;
+    } else {
+        filterModels = models.filter(model => !model.isOverBuy)
+        altText = `法人賣超排行前 ${top} 名`;
+    }
+    const flexMessage = generateRankStockFlexMessages(filterModels, altText);
+    await client.replyMessage(replyToken, flexMessage)
+    return;
+}
 
 export function generateRankStockFlexMessages(models: RankPageViewModel[], altText: string): FlexMessage {
     const ret: FlexMessage = {

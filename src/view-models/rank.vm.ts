@@ -1,5 +1,6 @@
 import { RankStockItem } from "../services/stock-fetcher";
 import * as luxon from "luxon";
+import { typeChecker } from 'camel-toolbox';
 
 export enum RankType {
     foreign = "foreign",
@@ -20,7 +21,7 @@ export class RankPageViewModel {
     public dateQuery: Date
     public isOverBuy: boolean
     constructor(param: RankPageViewModelInitParameter) {
-        this.rankItems = param.rankStockItems.slice(0, 10).map(item => {
+        this.rankItems = param.rankStockItems.slice(0, typeChecker.isNullOrUndefinedObject(param.size) ? param.rankStockItems.length : param.size).map(item => {
 
             let riseStyle: "text-danger" | "text-success" | "" = ""
             if (item.rise > 0) {
@@ -82,4 +83,5 @@ export interface RankPageViewModelInitParameter {
     rankType: RankType
     isOverBuy: boolean
     dateQuery: Date
+    size?: number
 }

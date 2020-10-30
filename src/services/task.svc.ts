@@ -24,15 +24,15 @@ export async function setTasks(): Promise<void> {
 
 export async function pushToLineChatbotTask(): Promise<void> {
     console.log(`pushToLineChatbotTask start`)
-    
+
     // 現在時間是否要 run service
 
     if (!isNeedToPush()) {
         return;
     }
 
-    const pageModels = await getAllRankPageViewModels();
-
+    const pageModels = await getAllRankPageViewModels(10)
+    
     const client = new Client({
         channelAccessToken: config.lineChannelAccessToken,
         channelSecret: config.lineChannelSecret

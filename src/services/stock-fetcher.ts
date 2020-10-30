@@ -102,8 +102,7 @@ function isStockItem(tdElements: cheerio.Cheerio): boolean {
     return tdElements.length === 10 && !isNaN(+tdElements.eq(0).text())
 }
 
-
-export async function getAllRankPageViewModels(): Promise<RankPageViewModel[]> {
+export async function getAllRankPageViewModels(size?: number): Promise<RankPageViewModel[]> {
     const ret: string[] = [];
 
     const foreignHtml = await getBig5Content({ url: sourceUrls.foreign });
@@ -117,14 +116,14 @@ export async function getAllRankPageViewModels(): Promise<RankPageViewModel[]> {
     const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseRankStockHtml({ html: selfEmployedHtml });
 
     const pageModels: RankPageViewModel[] = [
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: foreignRiseItems, rankType: RankType.foreign }),
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: creditRiseItems, rankType: RankType.credit }),
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: hotRiseItems, rankType: RankType.hot }),
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: selfEmployedRiseItems, rankType: RankType.selfEmployed }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: foreignFallItems, rankType: RankType.foreign }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: creditFallItems, rankType: RankType.credit }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: hotFallItems, rankType: RankType.hot }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: selfEmployedFallItems, rankType: RankType.selfEmployed }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: foreignRiseItems, rankType: RankType.foreign, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: creditRiseItems, rankType: RankType.credit, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: hotRiseItems, rankType: RankType.hot, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: selfEmployedRiseItems, rankType: RankType.selfEmployed, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: foreignFallItems, rankType: RankType.foreign, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: creditFallItems, rankType: RankType.credit, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: hotFallItems, rankType: RankType.hot, size }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: selfEmployedFallItems, rankType: RankType.selfEmployed, size }),
     ]
     return pageModels
 }
