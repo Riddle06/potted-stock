@@ -5,10 +5,11 @@ import * as fs from "fs";
 import * as util from "util";
 import * as path from "path";
 import { RankPageViewModel, RankType } from '../view-models/rank.vm';
-import { getBig5Content, parseRankStockHtml, sourceUrls } from './stock-fetcher';
+import { getAllRankPageViewModels, getBig5Content, parseRankStockHtml, sourceUrls } from './stock-fetcher';
 import nodeHtmlToImage from "node-html-to-image";
 import { Client, FlexMessage, ImageMessage } from '@line/bot-sdk';
 import * as del from "del";
+import { generateRankStockFlexMessages } from './line-chatbot.svc';
 
 export async function setTasks(): Promise<void> {
     nodeSchedule.scheduleJob(config.schedulePushToLineChatbot, () => {
@@ -21,50 +22,32 @@ export async function setTasks(): Promise<void> {
 }
 
 
-export async function pushToLineChatbotTask(): Promise<string[]> {
+export async function pushToLineChatbotTask(): Promise<void> {
     console.log(`pushToLineChatbotTask start`)
+    
     // 現在時間是否要 run service
 
     if (!isNeedToPush()) {
-        return [];
+        return;
     }
 
-    // 產圖片：買賣超 外資 , 投信, 主力, 自營商
-    const ret = await generateImages()
-
-    // push images to line chatbot
+    const pageModels = await getAllRankPageViewModels();
 
     const client = new Client({
         channelAccessToken: config.lineChannelAccessToken,
         channelSecret: config.lineChannelSecret
     })
 
+    const overBuyModels = pageModels.filter(model => model.isOverBuy);
+    const overSellModels = pageModels.filter(model => !model.isOverBuy);
 
+    const overBuyFlexMessage = generateRankStockFlexMessages(overBuyModels, "法人買超排行");
+    const overSellFlexMessage = generateRankStockFlexMessages(overSellModels, "法人賣超排行");
 
-    // 買超
-    const overBuyImagesUrl = ret.filter(url => url.includes('over-buy'));
-    const overSellImagesUrl = ret.filter(url => url.includes('over-sell'));
+    await client.broadcast(overBuyFlexMessage);
+    await client.broadcast(overSellFlexMessage);
 
-    const overBuyMessages: ImageMessage[] = overBuyImagesUrl.map(url => {
-        return {
-            type: "image",
-            originalContentUrl: url,
-            previewImageUrl: url
-        }
-    })
-
-    const overSellMessages: ImageMessage[] = overSellImagesUrl.map(url => {
-        return {
-            type: "image",
-            originalContentUrl: url,
-            previewImageUrl: url
-        }
-    })
-
-    await client.broadcast(overBuyMessages);
-    await client.broadcast(overSellMessages);
-
-    return ret;
+    return;
 }
 
 export async function clearFolderFiles(): Promise<boolean> {
@@ -81,32 +64,14 @@ function isNeedToPush(): boolean {
     return allowPushWeekDay.some(weekday => weekday === currentWeekDay)
 }
 
+
+
 export async function generateImages(): Promise<string[]> {
     const ret: string[] = [];
     const readFile = util.promisify(fs.readFile)
     const htmlTemplate = await readFile(path.resolve(__dirname, '../../views/rank.handlebars'), { encoding: 'utf-8' });
-
-    const foreignHtml = await getBig5Content({ url: sourceUrls.foreign });
-    const creditHtml = await getBig5Content({ url: sourceUrls.credit });
-    const hotHtml = await getBig5Content({ url: sourceUrls.hot });
-    const selfEmployedHtml = await getBig5Content({ url: sourceUrls.selfEmployed });
-
-    const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseRankStockHtml({ html: foreignHtml });
-    const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseRankStockHtml({ html: creditHtml });
-    const { riseItems: hotRiseItems, fallItems: hotFallItems } = await parseRankStockHtml({ html: hotHtml });
-    const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseRankStockHtml({ html: selfEmployedHtml });
-
-    const pageModels: RankPageViewModel[] = [
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: foreignRiseItems, rankType: RankType.foreign }),
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: creditRiseItems, rankType: RankType.credit }),
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: hotRiseItems, rankType: RankType.hot }),
-        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: selfEmployedRiseItems, rankType: RankType.selfEmployed }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: foreignFallItems, rankType: RankType.foreign }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: creditFallItems, rankType: RankType.credit }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: hotFallItems, rankType: RankType.hot }),
-        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: selfEmployedFallItems, rankType: RankType.selfEmployed }),
-    ]
-
+    const pageModels = await getAllRankPageViewModels();
+    const dateQuery = pageModels[0]?.dateQuery ?? new Date();
     const dirPath = path.resolve(__dirname, `../../generate-files/${luxon.DateTime.fromJSDate(dateQuery).toFormat("yyyy-MM-dd")}`);
 
     if (!fs.existsSync(dirPath)) {
@@ -127,8 +92,6 @@ export async function generateImages(): Promise<string[]> {
             }
         })
     })
-
-    console.log({ ret })
 
     return ret;
 }

@@ -2,6 +2,7 @@ import * as request from "request";
 import * as iconvLite from "iconv-lite";
 import $ from "cheerio";
 import * as luxon from "luxon";
+import { RankPageViewModel, RankType } from "../view-models/rank.vm";
 
 
 export const sourceUrls: Readonly<{
@@ -88,7 +89,7 @@ export async function parseRankStockHtml({ html }: { html: string }): Promise<Bu
     if (eleDataDate.length) {
         dateQuery = luxon.DateTime.fromFormat(eleDataDate.text().replace(/日期：/g, ''), "MM/dd").toJSDate()
     }
-    
+
 
     return {
         riseItems,
@@ -101,6 +102,32 @@ function isStockItem(tdElements: cheerio.Cheerio): boolean {
     return tdElements.length === 10 && !isNaN(+tdElements.eq(0).text())
 }
 
+
+export async function getAllRankPageViewModels(): Promise<RankPageViewModel[]> {
+    const ret: string[] = [];
+
+    const foreignHtml = await getBig5Content({ url: sourceUrls.foreign });
+    const creditHtml = await getBig5Content({ url: sourceUrls.credit });
+    const hotHtml = await getBig5Content({ url: sourceUrls.hot });
+    const selfEmployedHtml = await getBig5Content({ url: sourceUrls.selfEmployed });
+
+    const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseRankStockHtml({ html: foreignHtml });
+    const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseRankStockHtml({ html: creditHtml });
+    const { riseItems: hotRiseItems, fallItems: hotFallItems } = await parseRankStockHtml({ html: hotHtml });
+    const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseRankStockHtml({ html: selfEmployedHtml });
+
+    const pageModels: RankPageViewModel[] = [
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: foreignRiseItems, rankType: RankType.foreign }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: creditRiseItems, rankType: RankType.credit }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: hotRiseItems, rankType: RankType.hot }),
+        new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: selfEmployedRiseItems, rankType: RankType.selfEmployed }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: foreignFallItems, rankType: RankType.foreign }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: creditFallItems, rankType: RankType.credit }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: hotFallItems, rankType: RankType.hot }),
+        new RankPageViewModel({ dateQuery, isOverBuy: false, rankStockItems: selfEmployedFallItems, rankType: RankType.selfEmployed }),
+    ]
+    return pageModels
+}
 
 export interface RankStockItem {
     rank: number
