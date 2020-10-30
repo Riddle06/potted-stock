@@ -12,15 +12,15 @@
 
 ## Demo 
 
-<img style="width:300px" src="https://i.imgur.com/pEuVRFv.jpg" />
-<img style="width:300px" src="https://i.imgur.com/uFKsME6.jpg" />
+![](https://i.imgur.com/pEuVRFv.jpg=300x)
+![](https://i.imgur.com/uFKsME6.jpg=300x)
 
 
 ##  How To Use
 
 - 種花裁金 QR Code
 
-<img src="https://qr-official.line.me/sid/M/454tdiqy.png">
+![](https://imgur.com/s02uap2)
 
 <a href="https://lin.ee/iH0OfcO"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/zh-Hant.png" alt="加入好友" height="36" border="0"></a>
 
