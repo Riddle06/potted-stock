@@ -109,18 +109,23 @@ function isStockItem(tdElements: cheerio.Cheerio): boolean {
 }
 
 export async function getAllRankPageViewModels(size?: number): Promise<RankPageViewModel[]> {
-    
+
+    console.time(`getBig5Content`)
     const [foreignHtml, creditHtml, hotHtml, selfEmployedHtml] = await Promise.all([
         getBig5Content({ url: sourceUrls.foreign }),
         getBig5Content({ url: sourceUrls.credit }),
         getBig5Content({ url: sourceUrls.hot }),
         getBig5Content({ url: sourceUrls.selfEmployed })
     ])
+    console.timeEnd(`getBig5Content`)
 
+
+    console.time(`parseRankStockHtml`)
     const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseRankStockHtml({ html: foreignHtml });
     const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseRankStockHtml({ html: creditHtml });
     const { riseItems: hotRiseItems, fallItems: hotFallItems } = await parseRankStockHtml({ html: hotHtml });
     const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseRankStockHtml({ html: selfEmployedHtml });
+    console.timeEnd(`parseRankStockHtml`)
 
     const pageModels: RankPageViewModel[] = [
         new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: foreignRiseItems, rankType: RankType.foreign, size }),
