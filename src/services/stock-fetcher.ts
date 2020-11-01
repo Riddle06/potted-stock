@@ -5,8 +5,9 @@ import * as luxon from "luxon";
 import { RankPageViewModel, RankType } from "../view-models/rank.vm";
 import { typeChecker } from 'camel-toolbox';
 
+const stockRegex = /^[0-9a-z]+/g;
 
-export const sourceUrls: Readonly<{
+type SourceUrls = Readonly<{
     /**
      * 外資
      */
@@ -23,11 +24,25 @@ export const sourceUrls: Readonly<{
      * 主力
      */
     hot: string
-}> = {
+    /**
+     * 漲幅排行
+     */
+    rise: string
+    /**
+     * 跌幅排行
+     */
+    fall: string
+}>
+
+
+export const sourceUrls: SourceUrls = {
     foreign: "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgk.djhtm?A=D&B=0&C=1",
     credit: "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgk.djhtm?A=DD&B=0&C=1",
     selfEmployed: "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgk.djhtm?A=DB&B=0&C=1",
-    hot: "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgk.djhtm?A=F&B=0&C=1"
+    hot: "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zgk.djhtm?A=F&B=0&C=1",
+    rise: "https://fubon-ebrokerdj.fbs.com.tw/z/zg/zg_A_0_1.djhtm",
+    fall: "https://fubon-ebrokerdj.fbs.com.tw/Z/ZG/ZG_AA.djhtm"
+
 }
 
 export function getBig5Content({ url }: { url: string }): Promise<string> {
@@ -51,15 +66,15 @@ export function getBig5Content({ url }: { url: string }): Promise<string> {
     })
 }
 
-export async function parseRankStockHtml({ html }: { html: string }): Promise<BuyAndSellRankItemResult> {
-    const stockRegex = /^[0-9a-z]+/g;
+export async function parseOverBuyRankStockHtml({ html }: { html: string }): Promise<BuyAndSellRankItemResult> {
+
     const $trList = $('tr', html)
-    const riseItems: RankStockItem[] = [];
-    const fallItems: RankStockItem[] = [];
+    const riseItems: OverBuyRankStockItem[] = [];
+    const fallItems: OverBuyRankStockItem[] = [];
     $trList.each((index, ele) => {
         const tdElements = $(ele).find('td');
 
-        if (!isStockItem(tdElements)) {
+        if (!isValidOverBuyStockItem(tdElements)) {
             return true;
         }
         if (typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[1]).text())) {
@@ -104,8 +119,35 @@ export async function parseRankStockHtml({ html }: { html: string }): Promise<Bu
     }
 }
 
-function isStockItem(tdElements: cheerio.Cheerio): boolean {
+export function parseRiseAndFallRankHtml({ html }: { html: string }): RiseAndFallRankStockItem[] {
+    const $trMenu = $("#oscrollmenu", html)
+
+    const $trStockItems = $trMenu.nextAll();
+
+    const items: RiseAndFallRankStockItem[] = [];
+    $trStockItems.each((index, element) => {
+        const tdElements = $(element).find('td');
+        
+        const id = $(tdElements[1]).text().trim().match(stockRegex)[0].toUpperCase();
+        items.push({
+            rank: paseStringToNumber($(tdElements[0]).text()),
+            name: $(tdElements[1]).text().trim().replace(id, '').trim().toUpperCase(),
+            dealCount: paseStringToNumber($(tdElements[5]).text()),
+            price: paseStringToNumber($(tdElements[2]).text()),
+            rise: paseStringToNumber($(tdElements[3]).text()),
+            id,
+            riseRate: paseStringToNumber($(tdElements[4]).text()) / 100,
+        })
+    })
+    return items;
+}
+
+function isValidOverBuyStockItem(tdElements: cheerio.Cheerio): boolean {
     return tdElements.length === 10 && !isNaN(+tdElements.eq(0).text())
+}
+
+function paseStringToNumber(text: string): number {
+    return +text.replace(/,/g, '').replace(/%/g, '').replace(/\+/g, '').replace(/-/g, '')
 }
 
 export async function getAllRankPageViewModels(size?: number): Promise<RankPageViewModel[]> {
@@ -121,10 +163,10 @@ export async function getAllRankPageViewModels(size?: number): Promise<RankPageV
 
 
     console.time(`parseRankStockHtml`)
-    const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseRankStockHtml({ html: foreignHtml });
-    const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseRankStockHtml({ html: creditHtml });
-    const { riseItems: hotRiseItems, fallItems: hotFallItems } = await parseRankStockHtml({ html: hotHtml });
-    const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseRankStockHtml({ html: selfEmployedHtml });
+    const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseOverBuyRankStockHtml({ html: foreignHtml });
+    const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseOverBuyRankStockHtml({ html: creditHtml });
+    const { riseItems: hotRiseItems, fallItems: hotFallItems } = await parseOverBuyRankStockHtml({ html: hotHtml });
+    const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseOverBuyRankStockHtml({ html: selfEmployedHtml });
     console.timeEnd(`parseRankStockHtml`)
 
     const pageModels: RankPageViewModel[] = [
@@ -140,7 +182,7 @@ export async function getAllRankPageViewModels(size?: number): Promise<RankPageV
     return pageModels
 }
 
-export interface RankStockItem {
+export interface OverBuyRankStockItem {
     rank: number
     name: string
     price: number
@@ -149,8 +191,21 @@ export interface RankStockItem {
     id: string
 }
 
+export interface RiseAndFallRankStockItem {
+    id: string
+    rank: number
+    name: string
+    price: number
+    rise: number
+    riseRate: number
+    /**
+     * 成交量
+     */
+    dealCount: number
+}
+
 export interface BuyAndSellRankItemResult {
     dateQuery: Date
-    riseItems: RankStockItem[]
-    fallItems: RankStockItem[]
+    riseItems: OverBuyRankStockItem[]
+    fallItems: OverBuyRankStockItem[]
 }

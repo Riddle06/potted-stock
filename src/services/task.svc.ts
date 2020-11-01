@@ -5,7 +5,7 @@ import * as path from "path";
 import { getAllRankPageViewModels } from './stock-fetcher';
 import { Client } from '@line/bot-sdk';
 import * as del from "del";
-import { generateRankStockFlexMessages } from './line-chatbot.svc';
+import { generateOverBuyRankStockFlexMessages } from './line-chatbot.svc';
 
 export async function setTasks(): Promise<void> {
     nodeSchedule.scheduleJob(config.schedulePushToLineChatbot, () => {
@@ -37,8 +37,8 @@ export async function pushToLineChatbotTask(): Promise<void> {
     const overBuyModels = pageModels.filter(model => model.isOverBuy);
     const overSellModels = pageModels.filter(model => !model.isOverBuy);
 
-    const overBuyFlexMessage = generateRankStockFlexMessages(overBuyModels, "法人買超排行");
-    const overSellFlexMessage = generateRankStockFlexMessages(overSellModels, "法人賣超排行");
+    const overBuyFlexMessage = generateOverBuyRankStockFlexMessages(overBuyModels, "法人買超排行");
+    const overSellFlexMessage = generateOverBuyRankStockFlexMessages(overSellModels, "法人賣超排行");
 
     await client.broadcast(overBuyFlexMessage);
     await client.broadcast(overSellFlexMessage);

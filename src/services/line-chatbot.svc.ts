@@ -1,6 +1,6 @@
 import { Client, FlexBubble, FlexComponent, FlexMessage } from '@line/bot-sdk';
 import { RankPageViewModel, RankType } from '../view-models/rank.vm';
-import { getAllRankPageViewModels, RankStockItem } from './stock-fetcher';
+import { getAllRankPageViewModels, getBig5Content, OverBuyRankStockItem, parseRiseAndFallRankHtml, RiseAndFallRankStockItem, sourceUrls } from './stock-fetcher';
 import commaNumber from "comma-number";
 import { config } from '../configuration';
 
@@ -8,7 +8,18 @@ import { config } from '../configuration';
 const client = new Client({
     channelAccessToken: config.lineChannelAccessToken,
     channelSecret: config.lineChannelSecret
-})
+});
+
+export async function replyRiseAndFallFlexMessage(replyToken: string, isRise: boolean): Promise<void> {
+
+    const top: number = 10;
+    const url: string = isRise ? sourceUrls.rise : sourceUrls.fall;
+    const html = await getBig5Content({ url });
+    const items = parseRiseAndFallRankHtml({ html }).slice(0, top);
+    const altText: string = isRise ? "漲幅排行" : "跌幅排行";
+    const flexMessage: FlexMessage = generateRiseAndFallRankStockFlexMessages(items, altText, isRise)
+    await client.replyMessage(replyToken, flexMessage);
+}
 
 
 export async function replyOverBuyFlexMessage(replyToken: string, isOverBuy: boolean): Promise<void> {
@@ -23,12 +34,15 @@ export async function replyOverBuyFlexMessage(replyToken: string, isOverBuy: boo
         filterModels = models.filter(model => !model.isOverBuy)
         altText = `法人賣超排行前 ${top} 名`;
     }
-    const flexMessage = generateRankStockFlexMessages(filterModels, altText);
+    const flexMessage = generateOverBuyRankStockFlexMessages(filterModels, altText);
     await client.replyMessage(replyToken, flexMessage)
     return;
 }
 
-export function generateRankStockFlexMessages(models: RankPageViewModel[], altText: string): FlexMessage {
+
+
+
+export function generateOverBuyRankStockFlexMessages(models: RankPageViewModel[], altText: string): FlexMessage {
     const ret: FlexMessage = {
         altText,
         type: "flex",
@@ -36,6 +50,15 @@ export function generateRankStockFlexMessages(models: RankPageViewModel[], altTe
             type: "carousel",
             contents: models.map(model => generateStockRankBubbleFlexMessage(model))
         },
+    }
+    return ret;
+}
+
+export function generateRiseAndFallRankStockFlexMessages(items: RiseAndFallRankStockItem[], altText: string, isRise: boolean): FlexMessage {
+    const ret: FlexMessage = {
+        altText,
+        type: "flex",
+        contents: generateStockRiseAndFallBubbleFlexMessage(items, altText, isRise),
     }
     return ret;
 }
@@ -68,7 +91,7 @@ function generateStockRankBubbleFlexMessage(model: RankPageViewModel): FlexBubbl
                     { type: "separator", margin: "md" },
                     {
                         type: "box", layout: "vertical", margin: "xxl", spacing: "none",
-                        contents: model.rankItems.map((item, index) => generateFlexComponentRankItem(item, (index + 1) % 2 === 1, model.isOverBuy))
+                        contents: model.rankItems.map((item, index) => generateFlexComponentByOverBuyRankItem(item, (index + 1) % 2 === 1, model.isOverBuy))
                     }
                 ]
             }
@@ -122,7 +145,7 @@ function getUriByPageModel(model: RankPageViewModel): string {
 }
 
 
-function generateFlexComponentRankItem(item: RankStockItem, isOddItem: boolean, isOverBuy: boolean): FlexComponent {
+function generateFlexComponentByOverBuyRankItem(item: OverBuyRankStockItem, isOddItem: boolean, isOverBuy: boolean): FlexComponent {
     const ret: FlexComponent = {
         type: "box",
         layout: "horizontal",
@@ -190,6 +213,69 @@ function generateFlexComponentRankItem(item: RankStockItem, isOddItem: boolean, 
     return ret;
 }
 
+function generateFlexComponentByRiseAndFallRankItem(item: RiseAndFallRankStockItem, isOddItem: boolean): FlexComponent {
+    const ret: FlexComponent = {
+        type: "box",
+        layout: "horizontal",
+        contents: [
+            {
+                type: "box",
+                layout: "vertical",
+                contents: [{ type: "text", size: "xxl", color: "#555555", text: item.rank.toString(), align: "center", flex: 1, gravity: "center" }],
+                flex: 1
+            },
+            {
+                type: "box", layout: "vertical", contents: [
+                    { type: "text", text: item.id, size: "lg", color: "#111111", align: "start", flex: 2, gravity: "top" },
+                    { type: "text", text: item.name, size: "xs", color: "#666666", gravity: "top", maxLines: 2, wrap: true }
+                ],
+                flex: 2
+            },
+            {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                    {
+                        type: "text",
+                        text: commaNumber(item.price),
+                        size: "xl",
+                        align: "start",
+                        flex: 2
+                    },
+                    {
+                        type: "text",
+                        text: commaNumber(item.dealCount),
+                    }
+                ],
+                flex: 2
+            },
+            {
+                type: "box",
+                layout: "vertical",
+                contents: [
+                    {
+                        type: "text",
+                        text: `${(item.riseRate * 100).toFixed(2)} %`,
+                        size: "xl",
+                        align: "start",
+                        flex: 2,
+                        color: getRiseColor(item.rise)
+                    },
+                    {
+                        type: "text",
+                        text: `${item.rise}`,
+                        color: getRiseColor(item.rise)
+                    }
+
+                ],
+                flex: 2
+            }
+        ],
+        backgroundColor: isOddItem ? undefined : "#f5f5f5",
+    }
+    return ret;
+}
+
 
 function getRiseIcon(rise: number): string {
 
@@ -215,4 +301,74 @@ function getRiseColor(rise: number): string {
     }
 
     return undefined;
+}
+
+function generateStockRiseAndFallBubbleFlexMessage(items: RiseAndFallRankStockItem[], headerText: string, isRise: boolean): FlexBubble {
+    const ret: FlexBubble = {
+        type: "bubble",
+        size: "giga",
+        direction: "ltr",
+        body: {
+            type: "box", layout: "vertical",
+            contents: [{
+                type: "text", text: headerText, weight: "bold", size: "xl", margin: "none", color: isRise ? "#ff1414" : "#28a745"
+            },
+            { type: "separator", margin: "lg" },
+            {
+                type: "box", layout: "vertical", margin: "xl", spacing: "none",
+                contents: [
+                    {
+                        type: "box",
+                        layout: "horizontal",
+                        flex: 1,
+                        contents: [
+                            { type: "text", text: "名次", size: "md", align: "start", flex: 1 },
+                            { type: "text", text: "代號", size: "md", align: "start", flex: 2 },
+                            {
+                                type: "box",
+                                flex: 2,
+                                layout: "vertical",
+                                contents: [
+                                    { type: "text", text: "價格", size: "md", align: "start", flex: 1 },
+                                    { type: "text", text: "成交量", size: "md", align: "start", flex: 1 }
+                                ]
+                            },
+                            {
+                                type: "box",
+                                flex: 2,
+                                layout: "vertical",
+                                contents: [
+                                    { type: "text", text: "漲幅", size: "md", align: "start", flex: 1 },
+                                    { type: "text", text: "漲跌", size: "md", align: "start", flex: 1 }
+                                ]
+                            }
+                        ]
+                    },
+                    { type: "separator", margin: "md" },
+                    {
+                        type: "box", layout: "vertical", margin: "xxl", spacing: "none",
+                        contents: items.map((item, index) => generateFlexComponentByRiseAndFallRankItem(item, (index + 1) % 2 === 1))
+                    }
+                ]
+            }
+            ]
+        },
+        footer: {
+            type: "box", layout: "vertical", contents: [{
+                type: "button",
+                action: {
+                    type: "uri",
+                    label: "前往查看所有排行",
+                    uri: "https://www.google.com"
+                }
+            }
+            ]
+        },
+        styles: {
+            footer: {
+                separator: true
+            }
+        }
+    }
+    return ret;
 }

@@ -1,4 +1,4 @@
-import { RankStockItem } from "../services/stock-fetcher";
+import { OverBuyRankStockItem } from "../services/stock-fetcher";
 import * as luxon from "luxon";
 import { typeChecker } from 'camel-toolbox';
 
@@ -9,7 +9,7 @@ export enum RankType {
     hot = "hot"
 }
 
-export interface RankItemViewModel extends RankStockItem {
+export interface RankItemViewModel extends OverBuyRankStockItem {
     riseStyle: "text-danger" | "text-success" | ""
 }
 
@@ -79,7 +79,7 @@ export class RankPageViewModel {
 }
 
 export interface RankPageViewModelInitParameter {
-    rankStockItems: RankStockItem[]
+    rankStockItems: OverBuyRankStockItem[]
     rankType: RankType
     isOverBuy: boolean
     dateQuery: Date
