@@ -310,7 +310,7 @@ function getRiseChar(rise: number): string {
         return "+"
     }
     if (rise < 0) {
-        return "-"
+        return ""
     }
 
     return ""
