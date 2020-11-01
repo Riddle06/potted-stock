@@ -66,7 +66,7 @@ export function getBig5Content({ url }: { url: string }): Promise<string> {
     })
 }
 
-export async function parseOverBuyRankStockHtml({ html }: { html: string }): Promise<BuyAndSellRankItemResult> {
+export async function parseOverBuyRankStockHtml({ html }: { html: string }): Promise<ParseBuyAndSellRankItemResult> {
 
     const $trList = $('tr', html)
     const riseItems: OverBuyRankStockItem[] = [];
@@ -119,15 +119,17 @@ export async function parseOverBuyRankStockHtml({ html }: { html: string }): Pro
     }
 }
 
-export function parseRiseAndFallRankHtml({ html }: { html: string }): RiseAndFallRankStockItem[] {
+export function parseRiseAndFallRankHtml({ html }: { html: string }): ParseRiseAndFallRankResult {
     const $trMenu = $("#oscrollmenu", html)
+    const $tdDate = $(".t11", html)
 
+    const dateQuery = luxon.DateTime.fromFormat($tdDate.text().replace(/日期：/g, ''), "MM/dd").toJSDate()
     const $trStockItems = $trMenu.nextAll();
 
     const items: RiseAndFallRankStockItem[] = [];
     $trStockItems.each((index, element) => {
         const tdElements = $(element).find('td');
-        
+
         const id = $(tdElements[1]).text().trim().match(stockRegex)[0].toUpperCase();
         items.push({
             rank: paseStringToNumber($(tdElements[0]).text()),
@@ -139,7 +141,11 @@ export function parseRiseAndFallRankHtml({ html }: { html: string }): RiseAndFal
             riseRate: paseStringToNumber($(tdElements[4]).text()) / 100,
         })
     })
-    return items;
+
+    return {
+        items,
+        dateQuery
+    };
 }
 
 function isValidOverBuyStockItem(tdElements: cheerio.Cheerio): boolean {
@@ -152,22 +158,19 @@ function paseStringToNumber(text: string): number {
 
 export async function getAllRankPageViewModels(size?: number): Promise<RankPageViewModel[]> {
 
-    console.time(`getBig5Content`)
+
     const [foreignHtml, creditHtml, hotHtml, selfEmployedHtml] = await Promise.all([
         getBig5Content({ url: sourceUrls.foreign }),
         getBig5Content({ url: sourceUrls.credit }),
         getBig5Content({ url: sourceUrls.hot }),
         getBig5Content({ url: sourceUrls.selfEmployed })
     ])
-    console.timeEnd(`getBig5Content`)
 
 
-    console.time(`parseRankStockHtml`)
     const { riseItems: foreignRiseItems, fallItems: foreignFallItems, dateQuery } = await parseOverBuyRankStockHtml({ html: foreignHtml });
     const { riseItems: creditRiseItems, fallItems: creditFallItems } = await parseOverBuyRankStockHtml({ html: creditHtml });
     const { riseItems: hotRiseItems, fallItems: hotFallItems } = await parseOverBuyRankStockHtml({ html: hotHtml });
     const { riseItems: selfEmployedRiseItems, fallItems: selfEmployedFallItems } = await parseOverBuyRankStockHtml({ html: selfEmployedHtml });
-    console.timeEnd(`parseRankStockHtml`)
 
     const pageModels: RankPageViewModel[] = [
         new RankPageViewModel({ dateQuery, isOverBuy: true, rankStockItems: foreignRiseItems, rankType: RankType.foreign, size }),
@@ -204,8 +207,12 @@ export interface RiseAndFallRankStockItem {
     dealCount: number
 }
 
-export interface BuyAndSellRankItemResult {
+export interface ParseBuyAndSellRankItemResult {
     dateQuery: Date
     riseItems: OverBuyRankStockItem[]
     fallItems: OverBuyRankStockItem[]
+}
+export interface ParseRiseAndFallRankResult {
+    items: RiseAndFallRankStockItem[],
+    dateQuery: Date
 }

@@ -3,6 +3,7 @@ import { RankPageViewModel, RankType } from '../view-models/rank.vm';
 import { getAllRankPageViewModels, getBig5Content, OverBuyRankStockItem, parseRiseAndFallRankHtml, RiseAndFallRankStockItem, sourceUrls } from './stock-fetcher';
 import commaNumber from "comma-number";
 import { config } from '../configuration';
+import * as luxon from "luxon";
 
 
 const client = new Client({
@@ -15,8 +16,9 @@ export async function replyRiseAndFallFlexMessage(replyToken: string, isRise: bo
     const top: number = 10;
     const url: string = isRise ? sourceUrls.rise : sourceUrls.fall;
     const html = await getBig5Content({ url });
-    const items = parseRiseAndFallRankHtml({ html }).slice(0, top);
-    const altText: string = isRise ? "漲幅排行" : "跌幅排行";
+    const result = parseRiseAndFallRankHtml({ html })
+    const items = result.items.slice(0, top);
+    const altText: string = luxon.DateTime.fromJSDate(result.dateQuery).toFormat("MM/dd") + " " + (isRise ? "漲幅排行" : "跌幅排行");
     const flexMessage: FlexMessage = generateRiseAndFallRankStockFlexMessages(items, altText, isRise)
     await client.replyMessage(replyToken, flexMessage);
 }
@@ -263,7 +265,7 @@ function generateFlexComponentByRiseAndFallRankItem(item: RiseAndFallRankStockIt
                     },
                     {
                         type: "text",
-                        text: `${item.rise}`,
+                        text: `${getRiseChar(item.rise)}${item.rise}`,
                         color: getRiseColor(item.rise)
                     }
 
@@ -301,6 +303,17 @@ function getRiseColor(rise: number): string {
     }
 
     return undefined;
+}
+
+function getRiseChar(rise: number): string {
+    if (rise > 0) {
+        return "+"
+    }
+    if (rise < 0) {
+        return "-"
+    }
+
+    return ""
 }
 
 function generateStockRiseAndFallBubbleFlexMessage(items: RiseAndFallRankStockItem[], headerText: string, isRise: boolean): FlexBubble {
