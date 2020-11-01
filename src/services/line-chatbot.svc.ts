@@ -351,7 +351,7 @@ function generateStockRiseAndFallBubbleFlexMessage(items: RiseAndFallRankStockIt
                                 flex: 2,
                                 layout: "vertical",
                                 contents: [
-                                    { type: "text", text: "漲幅", size: "md", align: "start", flex: 1 },
+                                    { type: "text", text: isRise ? "漲幅" : "跌幅", size: "md", align: "start", flex: 1 },
                                     { type: "text", text: "漲跌", size: "md", align: "start", flex: 1 }
                                 ]
                             }

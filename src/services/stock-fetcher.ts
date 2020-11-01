@@ -153,7 +153,7 @@ function isValidOverBuyStockItem(tdElements: cheerio.Cheerio): boolean {
 }
 
 function paseStringToNumber(text: string): number {
-    return +text.replace(/,/g, '').replace(/%/g, '').replace(/\+/g, '').replace(/-/g, '')
+    return +text.replace(/,/g, '').replace(/%/g, '').replace(/\+/g, '');
 }
 
 export async function getAllRankPageViewModels(size?: number): Promise<RankPageViewModel[]> {
