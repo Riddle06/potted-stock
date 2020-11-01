@@ -16,11 +16,11 @@ router.use('/line-chatbot', middleware(lineChatbotConfig), async (req, res, next
             const replyToken = event.replyToken;
             if (event.message.text.includes("買超")) {
                 await replyOverBuyFlexMessage(replyToken, true);
-            } else if (event.message.text.indexOf("賣超")) {
+            } else if (event.message.text.includes("賣超")) {
                 await replyOverBuyFlexMessage(replyToken, false);
-            } else if (event.message.text.indexOf("漲幅排行")) {
+            } else if (event.message.text.includes("漲幅排行")) {
                 await replyRiseAndFallFlexMessage(replyToken, true);
-            } else if (event.message.text.indexOf("跌幅排行")) {
+            } else if (event.message.text.includes("跌幅排行")) {
                 await replyRiseAndFallFlexMessage(replyToken, false);
             }
         }
