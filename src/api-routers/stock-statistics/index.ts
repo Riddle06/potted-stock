@@ -5,15 +5,21 @@ const router = Router();
 router.get('/rise-rank', async (req, res, next) => {
     const html = await getBig5Content({ url: sourceUrls.rise });
     
-    const items = parseRiseAndFallRankHtml({ html });
+    const item = parseRiseAndFallRankHtml({ html });
     res.json({
         success: true,
-        items
+        item
     })
 })
 
 router.get('/fall-rank', async (req, res, next) => {
-
+    const html = await getBig5Content({ url: sourceUrls.fall });
+    
+    const item = parseRiseAndFallRankHtml({ html });
+    res.json({
+        success: true,
+        item
+    })
 })
 
 export default router;

@@ -133,7 +133,7 @@ export function parseRiseAndFallRankHtml({ html }: { html: string }): ParseRiseA
         const id = $(tdElements[1]).text().trim().match(stockRegex)[0].toUpperCase();
         items.push({
             rank: paseStringToNumber($(tdElements[0]).text()),
-            name: $(tdElements[1]).text().trim().replace(id, '').trim().toUpperCase(),
+            name: $(tdElements[1]).text().trim().toUpperCase().replace(id, '').trim().toUpperCase(),
             dealCount: paseStringToNumber($(tdElements[5]).text()),
             price: paseStringToNumber($(tdElements[2]).text()),
             rise: paseStringToNumber($(tdElements[3]).text()),
