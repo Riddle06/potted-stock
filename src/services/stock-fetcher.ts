@@ -77,29 +77,31 @@ export async function parseOverBuyRankStockHtml({ html }: { html: string }): Pro
         if (!isValidOverBuyStockItem(tdElements)) {
             return true;
         }
-        if (typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[1]).text())) {
-            return true;
+        if (!typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[1]).text())) {
+
+            riseItems.push({
+                rank: +$(tdElements[0]).text(),
+                name: $(tdElements[1]).text(),
+                overBuyAmount: +($(tdElements[2]).text().replace(/,/g, '')),
+                price: +$(tdElements[3]).text(),
+                rise: +($(tdElements[4]).text().replace(/,/g, '')),
+                id: $(tdElements[1]).text().match(stockRegex)[0].toUpperCase()
+            })
+        }
+
+        if (!typeChecker.isNullOrUndefinedOrWhiteSpace($(tdElements[6]).text())) {
+            fallItems.push({
+                rank: +$(tdElements[5]).text(),
+                name: $(tdElements[6]).text(),
+                overBuyAmount: +($(tdElements[7]).text().replace(/,/g, '')),
+                price: +$(tdElements[8]).text(),
+                rise: +($(tdElements[9]).text().replace(/,/g, '')),
+                id: $(tdElements[6]).text().match(stockRegex)[0].toUpperCase()
+            })
         }
 
 
-        riseItems.push({
-            rank: +$(tdElements[0]).text(),
-            name: $(tdElements[1]).text(),
-            overBuyAmount: +($(tdElements[2]).text().replace(/,/g, '')),
-            price: +$(tdElements[3]).text(),
-            rise: +($(tdElements[4]).text().replace(/,/g, '')),
-            id: $(tdElements[1]).text().match(stockRegex)[0].toUpperCase()
-        })
 
-
-        fallItems.push({
-            rank: +$(tdElements[5]).text(),
-            name: $(tdElements[6]).text(),
-            overBuyAmount: +($(tdElements[7]).text().replace(/,/g, '')),
-            price: +$(tdElements[8]).text(),
-            rise: +($(tdElements[9]).text().replace(/,/g, '')),
-            id: $(tdElements[6]).text().match(stockRegex)[0].toUpperCase()
-        })
 
     });
 
