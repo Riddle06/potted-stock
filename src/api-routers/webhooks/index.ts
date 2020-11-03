@@ -1,10 +1,10 @@
 import { config } from './../../configuration';
 import { Router } from 'express';
-import { middleware, RequestError, WebhookRequestBody } from "@line/bot-sdk";
+import { middleware, MiddlewareConfig, WebhookRequestBody } from "@line/bot-sdk";
 import { replyOverBuyFlexMessage, replyRiseAndFallFlexMessage } from '../../services/line-chatbot.svc';
 const router = Router();
 
-const lineChatbotConfig = {
+const lineChatbotConfig: MiddlewareConfig = {
     channelAccessToken: config.lineChannelAccessToken,
     channelSecret: config.lineChannelSecret
 }
