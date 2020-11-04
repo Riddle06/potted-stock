@@ -9,7 +9,7 @@ import * as path from "path";
 const app = express();
 
 // set static folder
-app.use('/static', express.static(path.resolve(__dirname, '../generate-files')));
+app.use('/static', express.static(path.resolve(__dirname, '../static')));
 
 // set view
 app.engine('handlebars', expressHandlebars({ defaultLayout: "" }));
