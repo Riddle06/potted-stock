@@ -7,6 +7,8 @@ router.use('/rank', RankRouter);
 router.get('/', async (req, res, next) => {
 
     // 
+
+    
     
     res.render('index');
 });

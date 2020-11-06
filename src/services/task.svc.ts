@@ -19,14 +19,12 @@ export async function setTasks(): Promise<void> {
 
 
 export async function pushToLineChatbotTask(): Promise<void> {
-    console.log(`pushToLineChatbotTask start`)
 
-    // 現在時間是否要 run service
-
+    // 判斷現在時間是否要 run service
     if (!isNeedToPush()) {
         return;
     }
-
+    
     const pageModels = await getAllRankPageViewModels(10)
 
     const client = new Client({
@@ -37,8 +35,9 @@ export async function pushToLineChatbotTask(): Promise<void> {
     const overBuyModels = pageModels.filter(model => model.isOverBuy);
     const overSellModels = pageModels.filter(model => !model.isOverBuy);
 
-    const overBuyFlexMessage = generateOverBuyRankStockFlexMessages(overBuyModels, "法人買超排行");
-    const overSellFlexMessage = generateOverBuyRankStockFlexMessages(overSellModels, "法人賣超排行");
+    const dateQueryText = luxon.DateTime.fromJSDate(overBuyModels[0] ? overBuyModels[0].dateQuery : new Date()).toFormat("MM/dd");
+    const overBuyFlexMessage = generateOverBuyRankStockFlexMessages(overBuyModels, `${dateQueryText} 法人買超排行`);
+    const overSellFlexMessage = generateOverBuyRankStockFlexMessages(overSellModels, `${dateQueryText} 法人賣超排行`);
 
     await client.broadcast(overBuyFlexMessage);
     await client.broadcast(overSellFlexMessage);
