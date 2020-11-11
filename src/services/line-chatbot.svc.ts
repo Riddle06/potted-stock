@@ -372,7 +372,7 @@ function generateStockRiseAndFallBubbleFlexMessage(items: RiseAndFallRankStockIt
                 action: {
                     type: "uri",
                     label: "前往查看所有排行",
-                    uri: config.appBaseUrl + '/rank/' + isRise ? 'rise' : 'fall'
+                    uri: (config.appBaseUrl + '/rank/') + (isRise ? 'rise' : 'fall')
                 }
             }
             ]
