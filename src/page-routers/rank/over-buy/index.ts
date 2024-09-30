@@ -4,7 +4,7 @@ import { RankPageViewModel, RankType } from '../../../view-models/rank.vm';
 const router = Router();
 const isOverBuy: boolean = true;
 
-router.get('/foreign', async (req, res) => {
+router.get('/foreign', async (req, res) => {  
     const html = await getBig5Content({ url: sourceUrls.foreign });
     const { riseItems, dateQuery } = await parseOverBuyRankStockHtml({ html });
     const model = new RankPageViewModel({
